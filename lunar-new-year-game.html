@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Are You Ready to Ride? — 2026 Lunar New Year</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+  :root{--dark:#121212;--light:#F0EDEA;--fire:#E8503A;--fire-orange:#E67E22;--fire-gold:#F5A623;--fire-deep:#C0392B}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--dark);color:#fff;overflow:hidden;height:100vh;width:100vw}
+  #fireCanvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+  /* ── Slides ── */
+  .slide{display:none;position:fixed;inset:0;padding:2.5rem 2rem 5rem;flex-direction:column;justify-content:center;align-items:center;text-align:center;z-index:1;overflow-y:auto}
+  .slide.active{display:flex;animation:fadeIn .5s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes popIn{0%{opacity:0;transform:scale(.7)}70%{transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes countUp{0%{opacity:0;transform:scale(.3)}60%{transform:scale(1.08)}100%{opacity:1;transform:scale(1)}}
+  @keyframes fireGlow{0%,100%{text-shadow:0 0 20px rgba(232,80,58,.4)}50%{text-shadow:0 0 40px rgba(232,80,58,.7),0 0 80px rgba(245,166,35,.3)}}
+  @keyframes gallop{0%{transform:translateX(110vw)}25%{transform:translateX(70vw) translateY(-15px)}50%{transform:translateX(30vw)}75%{transform:translateX(-5vw) translateY(-15px)}100%{transform:translateX(-25vw)}}
+
+  /* ── Backgrounds ── */
+  .bg-dark{background:var(--dark);color:#fff}
+  .bg-light{background:var(--light);color:var(--dark)}
+
+  /* ── Concentric ring decoration ── */
+  .rings{position:absolute;border-radius:50%;pointer-events:none;z-index:0}
+  .rings::before{content:'';position:absolute;inset:0;border-radius:50%;border:2.5px solid currentColor;box-shadow:0 0 0 15px transparent,0 0 0 17.5px currentColor,0 0 0 32px transparent,0 0 0 34.5px currentColor,0 0 0 49px transparent,0 0 0 51.5px currentColor,0 0 0 66px transparent,0 0 0 68.5px currentColor,0 0 0 83px transparent,0 0 0 85.5px currentColor}
+  .rings-dark{color:rgba(255,255,255,.07)}
+  .rings-light{color:rgba(18,18,18,.07)}
+  .rings-fire{color:rgba(232,80,58,.1)}
+
+  /* ── Type ── */
+  h1{font-family:'Outfit',sans-serif;font-weight:800;font-size:2.8rem;line-height:1.1;margin-bottom:.6rem;letter-spacing:-.02em}
+  h2{font-family:'Outfit',sans-serif;font-weight:700;font-size:1.8rem;line-height:1.2;margin-bottom:.5rem;letter-spacing:-.01em}
+  h3{font-family:'Outfit',sans-serif;font-weight:600;font-size:.85rem;text-transform:uppercase;letter-spacing:.2em;opacity:.5}
+  p,li{font-size:1.05rem;line-height:1.6;max-width:550px}
+  .subtitle{font-size:1rem;opacity:.5;font-weight:400}
+  .mt-1{margin-top:.8rem}.mt-2{margin-top:1.5rem}.mb-1{margin-bottom:.8rem}
+  .text-gold{color:var(--fire-gold)}.text-fire{color:var(--fire)}
+  .text-sm{font-size:.8rem;opacity:.35}
+  .accent-line{width:60px;height:2px;background:linear-gradient(90deg,transparent,var(--fire),transparent);margin:.8rem auto}
+  .accent-line.long{width:120px}
+
+  /* ── Big numbers ── */
+  .title-year{font-family:'Outfit',sans-serif;font-weight:900;font-size:8rem;line-height:.9;letter-spacing:-.04em;background:linear-gradient(180deg,var(--fire-gold),var(--fire-orange),var(--fire));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:fireGlow 3s ease-in-out infinite}
+  .big-num{font-family:'Outfit',sans-serif;font-weight:900;font-size:8rem;line-height:1;letter-spacing:-.04em;background:linear-gradient(180deg,var(--fire-gold),var(--fire));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:countUp .8s ease}
+  .big-emoji{font-size:3.5rem;margin-bottom:.8rem;display:block;animation:popIn .5s ease}
+
+  /* ── Round badge ── */
+  .round-badge{display:inline-block;background:rgba(232,80,58,.1);border:1px solid rgba(232,80,58,.25);color:var(--fire);font-family:'Outfit',sans-serif;font-weight:600;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1.2rem;border-radius:50px;margin-bottom:1.2rem}
+  .bg-light .round-badge{background:rgba(232,80,58,.06);border-color:rgba(232,80,58,.15)}
+
+  /* ── Zodiac grid + tooltips ── */
+  .zodiac-label{font-family:'Outfit',sans-serif;font-weight:600;font-size:.85rem;letter-spacing:.15em;text-transform:uppercase;color:var(--fire-gold);margin-top:1.5rem;margin-bottom:.8rem}
+  .zodiac-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;max-width:400px;width:100%}
+  .zodiac-btn{position:relative;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:10px;padding:.55rem .3rem;color:#fff;font-size:.8rem;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;text-align:center;line-height:1.3}
+  .zodiac-btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}
+  .zodiac-btn.selected{background:rgba(232,80,58,.15);border-color:var(--fire);color:var(--fire-gold);box-shadow:0 0 15px rgba(232,80,58,.15)}
+  .zodiac-btn .tip{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a1a1a;border:1px solid rgba(255,255,255,.15);color:var(--fire-gold);font-size:.7rem;padding:.3rem .6rem;border-radius:6px;white-space:nowrap;z-index:10;pointer-events:none}
+  .zodiac-btn .tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:rgba(255,255,255,.15)}
+  .zodiac-btn:hover .tip{display:block}
+
+  /* ── Inputs ── */
+  .name-input{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:50px;padding:.85rem 1.5rem;color:#fff;font-size:1.05rem;font-family:'Inter',sans-serif;outline:none;width:280px;text-align:center;transition:border-color .2s;margin-top:1.2rem}
+  .name-input::placeholder{color:rgba(255,255,255,.3)}
+  .name-input:focus{border-color:var(--fire);box-shadow:0 0 20px rgba(232,80,58,.12)}
+  .start-btn{margin-top:1.5rem;background:var(--fire);color:#fff;border:none;border-radius:50px;padding:.8rem 2.5rem;font-family:'Outfit',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;transition:all .2s;opacity:.3;pointer-events:none}
+  .start-btn.ready{opacity:1;pointer-events:all}
+  .start-btn.ready:hover{filter:brightness(1.15);transform:translateY(-2px);box-shadow:0 4px 20px rgba(232,80,58,.3)}
+
+  /* ── MC Options ── */
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-top:1.5rem;width:100%;max-width:560px}
+  .option{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;padding:1rem 1.2rem;font-size:1rem;font-weight:500;cursor:pointer;transition:all .2s;text-align:left;display:flex;align-items:center;gap:.7rem}
+  .option:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}
+  .option .letter{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.1);font-family:'Outfit',sans-serif;font-weight:700;font-size:.8rem;flex-shrink:0;transition:all .2s}
+  .option.selected{background:rgba(232,80,58,.12);border-color:var(--fire);box-shadow:0 0 15px rgba(232,80,58,.1)}
+  .option.selected .letter{background:var(--fire);color:#fff}
+  .options.locked .option{pointer-events:none}.options.locked .option:not(.selected){opacity:.25}
+  /* light */
+  .bg-light .option{background:rgba(18,18,18,.04);border-color:rgba(18,18,18,.1);color:var(--dark)}
+  .bg-light .option:hover{background:rgba(18,18,18,.08);border-color:rgba(18,18,18,.18)}
+  .bg-light .option .letter{background:rgba(18,18,18,.08);color:var(--dark)}
+  .bg-light .option.selected{background:rgba(232,80,58,.08);border-color:var(--fire)}
+  .bg-light .option.selected .letter{background:var(--fire);color:#fff}
+
+  /* ── T/F ── */
+  .tf-list{list-style:none;max-width:480px;width:100%;margin-top:1.2rem}
+  .tf-item{display:flex;align-items:center;justify-content:space-between;padding:.7rem 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:1rem;gap:1rem}
+  .tf-item span:first-child{flex:1;text-align:left}
+  .tf-btns{display:flex;gap:.35rem}
+  .tf-btn{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:8px;padding:.35rem .85rem;color:#fff;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Outfit',sans-serif}
+  .tf-btn:hover{background:rgba(255,255,255,.1)}
+  .tf-btn.sel-t{background:rgba(34,197,94,.15);border-color:#22C55E;color:#22C55E}
+  .tf-btn.sel-f{background:rgba(232,80,58,.12);border-color:var(--fire);color:var(--fire)}
+  .tf-btns.locked .tf-btn{pointer-events:none}.tf-btns.locked .tf-btn:not([class*="sel-"]){opacity:.2}
+
+  /* ── Story ── */
+  .story-block{background:rgba(255,255,255,.04);border-left:3px solid var(--fire);padding:1.3rem 1.8rem;border-radius:0 12px 12px 0;text-align:left;max-width:540px;margin:1.2rem 0;font-size:1rem;line-height:1.7}
+  .bg-light .story-block{background:rgba(18,18,18,.03);color:var(--dark)}
+
+  /* ── Country bonus ── */
+  .bonus-area{display:none;margin-top:1.5rem;animation:slideUp .4s ease}.bonus-area.show{display:block}
+  .bonus-msg{font-family:'Outfit',sans-serif;font-weight:700;font-size:1.2rem;color:var(--fire-gold);margin-bottom:.8rem;animation:popIn .4s ease}
+  .country-grid{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;max-width:420px;margin:.8rem auto}
+  .country-btn{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:50px;padding:.45rem 1rem;font-size:.9rem;color:#fff;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
+  .country-btn:hover{background:rgba(255,255,255,.1)}
+  .country-btn.picked{background:rgba(232,80,58,.12);border-color:var(--fire);color:var(--fire-gold)}
+  .country-btn.right{background:rgba(34,197,94,.15);border-color:#22C55E;color:#22C55E}
+  .country-btn.missed{background:rgba(245,166,35,.08);border-color:rgba(245,166,35,.25);color:var(--fire-gold);opacity:.6}
+  .country-btn.nope{opacity:.25}.country-btn.locked{pointer-events:none}
+  .reveal-countries-btn{margin-top:.8rem;background:var(--fire);border:none;color:#fff;padding:.45rem 1.2rem;border-radius:50px;font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s}
+  .reveal-countries-btn:hover{filter:brightness(1.15)}
+  .bg-light .country-btn{background:rgba(18,18,18,.04);border-color:rgba(18,18,18,.1);color:var(--dark)}
+  .bg-light .country-btn:hover{background:rgba(18,18,18,.08)}
+  .bg-light .country-btn.picked{background:rgba(232,80,58,.08);border-color:var(--fire);color:var(--fire)}
+
+  /* ── Squad ── */
+  .squad-input{display:flex;gap:.5rem;max-width:380px;width:100%;margin-top:1rem}
+  .squad-input input{flex:1;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:10px;padding:.6rem .8rem;color:#fff;font-size:.9rem;font-family:'Inter',sans-serif;outline:none}
+  .squad-input input::placeholder{color:rgba(255,255,255,.3)}
+  .squad-input input:focus{border-color:var(--fire)}
+  .squad-input select{background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.1);border-radius:10px;padding:.6rem .5rem;color:#fff;font-size:.85rem;font-family:'Inter',sans-serif;outline:none;appearance:none;cursor:pointer}
+  .squad-input select option{background:#1a1a1a;color:#fff}
+  .squad-input button{background:var(--fire);color:#fff;border:none;border-radius:10px;padding:0 1rem;font-family:'Outfit',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer}
+  .bg-light .squad-input input{background:rgba(18,18,18,.04);border-color:rgba(18,18,18,.1);color:var(--dark)}
+  .bg-light .squad-input input::placeholder{color:rgba(18,18,18,.3)}
+  .bg-light .squad-input select{background:rgba(18,18,18,.06);border-color:rgba(18,18,18,.1);color:var(--dark)}
+  .bg-light .squad-input select option{background:var(--light);color:var(--dark)}
+  .bg-light .squad-input button{background:var(--dark);color:#fff}
+  .squad-list{max-width:460px;width:100%;margin-top:1rem}
+  .squad-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:.8rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:.8rem;text-align:left;animation:slideUp .3s ease}
+  .bg-light .squad-card{background:rgba(18,18,18,.03);border-color:rgba(18,18,18,.06);color:var(--dark)}
+  .squad-card .sq-emoji{font-size:1.5rem;flex-shrink:0}
+  .squad-card .sq-info{flex:1}
+  .squad-card .sq-name{font-weight:600;font-size:.95rem}
+  .squad-card .sq-compat{font-size:.8rem;opacity:.5;margin-top:.15rem}
+  .squad-card .sq-level{font-family:'Outfit',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:.2rem .6rem;border-radius:50px;flex-shrink:0}
+  .sq-level.soulmate{background:rgba(245,166,35,.15);color:var(--fire-gold)}
+  .sq-level.great{background:rgba(34,197,94,.1);color:#22C55E}
+  .sq-level.good{background:rgba(59,130,246,.1);color:#60A5FA}
+  .sq-level.challenge{background:rgba(232,80,58,.1);color:var(--fire)}
+  .sq-level.clash{background:rgba(232,80,58,.15);color:var(--fire)}
+
+  /* ── Next btn + progress ── */
+  .next-btn{position:fixed;bottom:1.5rem;right:2rem;z-index:100;background:var(--dark);color:#fff;border:1.5px solid rgba(255,255,255,.2);border-radius:50px;padding:.65rem 1.8rem;font-family:'Outfit',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .25s;opacity:0;pointer-events:none;transform:translateY(5px)}
+  .next-btn.visible{opacity:1;pointer-events:all;transform:translateY(0)}
+  .next-btn:hover{background:var(--fire);border-color:var(--fire);transform:translateY(-2px);box-shadow:0 4px 15px rgba(232,80,58,.3)}
+  .progress-bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--fire),var(--fire-gold));z-index:200;transition:width .4s ease}
+
+  /* ── Wrong answers review ── */
+  .miss-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1rem 1.2rem;margin-bottom:.6rem;text-align:left;max-width:480px;width:100%;animation:slideUp .3s ease both}
+  .miss-card .miss-q{font-weight:600;font-size:.95rem;margin-bottom:.4rem}
+  .miss-card .miss-you{font-size:.85rem;opacity:.4;margin-bottom:.2rem}
+  .miss-card .miss-correct{font-size:.85rem;color:var(--fire-gold);margin-bottom:.3rem}
+  .miss-card .miss-why{font-size:.85rem;opacity:.4;line-height:1.5;font-style:italic}
+  .perfect-msg{font-family:'Outfit',sans-serif;font-size:2.2rem;font-weight:800;color:var(--fire-gold);animation:fireGlow 2s ease-in-out infinite}
+  #fireworksCanvas{position:fixed;inset:0;z-index:2;pointer-events:none;display:none}
+  #fireworksCanvas.active{display:block}
+
+  /* ── Galloping horse ── */
+  .galloping-horse{position:absolute;bottom:15%;font-size:6rem;opacity:.04;animation:gallop 8s linear infinite;pointer-events:none;z-index:0;filter:grayscale(.5)}
+  .galloping-horse:nth-child(2){font-size:4rem;bottom:25%;opacity:.025;animation-duration:11s;animation-delay:-4s}
+
+  /* ── Title card (Spotify Wrapped club style) ── */
+  .tc-outer{display:flex;justify-content:center;align-items:center;width:100%}
+  .tc-card{background:var(--dark);border:1.5px solid rgba(255,255,255,.08);border-radius:20px;padding:2.5rem 2.5rem 2rem;max-width:380px;width:100%;text-align:center;position:relative;overflow:hidden;animation:popIn .6s ease .2s both}
+  .tc-card::before{content:'';position:absolute;bottom:-60px;left:50%;transform:translateX(-50%);width:300px;height:150px;background:radial-gradient(ellipse,rgba(232,80,58,.12),transparent 70%);pointer-events:none}
+  .tc-top-label{font-family:'Outfit',sans-serif;font-weight:500;font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.3)}
+  .tc-zodiac-big{font-size:3.5rem;margin:.8rem 0 .2rem;display:block}
+  .tc-name{font-family:'Outfit',sans-serif;font-weight:700;font-size:1.3rem;color:#fff}
+  .tc-sign-label{font-size:.8rem;opacity:.35;margin-top:.1rem}
+  .tc-div{width:50px;height:1.5px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);margin:1rem auto}
+  .tc-title-wrap{background:var(--fire);margin:.6rem -2.5rem;padding:.7rem 1.5rem;position:relative}
+  .tc-title-wrap::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--fire),var(--fire-deep));pointer-events:none}
+  .tc-title{font-family:'Outfit',sans-serif;font-weight:900;font-size:2rem;line-height:1.15;color:#fff;position:relative;z-index:1;letter-spacing:-.01em}
+  .tc-flavor{font-size:.85rem;opacity:.4;margin-top:.8rem;line-height:1.5;max-width:280px;margin-left:auto;margin-right:auto;font-style:italic}
+  .tc-meter{margin:1rem auto .3rem;max-width:220px;width:100%;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+  .tc-meter-fill{height:100%;background:linear-gradient(90deg,var(--fire),var(--fire-gold));border-radius:3px;transition:width 1.5s ease .6s;width:0}
+  .tc-score{font-family:'Outfit',sans-serif;font-weight:700;font-size:.85rem;color:var(--fire-gold);margin-top:.3rem}
+  .tc-zodiac-msg{font-size:.75rem;opacity:.35;margin-top:.8rem;line-height:1.5;max-width:280px;margin-left:auto;margin-right:auto}
+  .tc-footer{font-family:'Outfit',sans-serif;font-size:.5rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.2);margin-top:1.2rem}
+  .tc-horse-wm{position:absolute;bottom:-8px;right:-3px;font-size:5rem;opacity:.03;pointer-events:none;transform:rotate(-10deg)}
+
+  /* ── Responsive ── */
+  @media(max-width:700px){
+    .slide{padding:1.5rem 1.2rem 5rem}h1{font-size:2rem}h2{font-size:1.5rem}
+    .options{grid-template-columns:1fr;max-width:360px}.title-year{font-size:5.5rem}
+    .big-num{font-size:5.5rem}.zodiac-grid{grid-template-columns:repeat(3,1fr);max-width:280px}
+    .tc-card{padding:2rem 1.5rem 1.5rem}.tc-title{font-size:1.7rem}
+    .tc-title-wrap{margin:.6rem -1.5rem}.tc-zodiac-big{font-size:2.5rem}
+  }
+</style>
+</head>
+<body>
+<canvas id="fireCanvas"></canvas>
+<canvas id="fireworksCanvas"></canvas>
+<div class="progress-bar" id="progressBar" style="width:0%"></div>
+
+<!-- S0: WELCOME -->
+<div class="slide bg-dark active" id="s0">
+  <div class="rings rings-dark" style="bottom:-120px;right:-80px;width:280px;height:280px"></div>
+  <div class="title-year">2026</div>
+  <h1 style="font-size:2.4rem">Are You Ready to Ride?</h1>
+  <div class="accent-line long"></div>
+  <p class="subtitle">Year of the Fire Horse</p>
+  <input class="name-input" id="nameInput" type="text" placeholder="Enter your name" maxlength="20" autocomplete="off">
+  <p class="zodiac-label">What's your zodiac sign?</p>
+  <div class="zodiac-grid" id="zodiacGrid"></div>
+  <button class="start-btn" id="startBtn" onclick="startGame()">Let's go</button>
+</div>
+
+<!-- S1: CONTEXT -->
+<div class="slide bg-light" id="s1">
+  <div class="rings rings-light" style="bottom:-100px;left:-90px;width:260px;height:260px"></div>
+  <span class="big-emoji">🐎🔥</span>
+  <h2>The Fire Horse Returns</h2>
+  <div class="accent-line"></div>
+  <p>The zodiac has 12 animals and 5 elements. The Fire Horse only appears once every <strong class="text-fire">60 years</strong>.</p>
+  <p class="mt-1">Last time: 1966. Next time: 2086.</p>
+  <p class="mt-1 subtitle">Let's see how well you know the year you're riding into.</p>
+  <p class="text-sm mt-2">13 points possible &bull; your title awaits at the end</p>
+</div>
+
+<!-- S2: Q1 -->
+<div class="slide bg-dark" id="s2">
+  <div class="rings rings-dark" style="top:-70px;right:-60px;width:200px;height:200px"></div>
+  <div class="round-badge">Warm Up</div>
+  <h2>The Chinese zodiac cycle<br>fully repeats every&hellip;</h2>
+  <div class="options" data-q="q1">
+    <div class="option" data-val="a" onclick="selectMC(this)"><span class="letter">A</span> 10 years</div>
+    <div class="option" data-val="b" onclick="selectMC(this)"><span class="letter">B</span> 12 years</div>
+    <div class="option" data-val="c" onclick="selectMC(this)"><span class="letter">C</span> 60 years</div>
+    <div class="option" data-val="d" onclick="selectMC(this)"><span class="letter">D</span> 24 years</div>
+  </div>
+</div>
+
+<!-- S3: Q2 -->
+<div class="slide bg-light" id="s3">
+  <div class="rings rings-light" style="bottom:-90px;right:-70px;width:220px;height:220px"></div>
+  <div class="round-badge">Warm Up</div>
+  <h2>What position is the Horse<br>in the zodiac order?</h2>
+  <div class="options" data-q="q2">
+    <div class="option" data-val="a" onclick="selectMC(this)"><span class="letter">A</span> 5th</div>
+    <div class="option" data-val="b" onclick="selectMC(this)"><span class="letter">B</span> 6th</div>
+    <div class="option" data-val="c" onclick="selectMC(this)"><span class="letter">C</span> 7th</div>
+    <div class="option" data-val="d" onclick="selectMC(this)"><span class="letter">D</span> 8th</div>
+  </div>
+</div>
+
+<!-- S4: T/F -->
+<div class="slide bg-dark" id="s4">
+  <div class="round-badge">Horse Personality</div>
+  <h2>True or false &mdash; Horses<br>are known for being&hellip;</h2>
+  <ul class="tf-list">
+    <li class="tf-item"><span>Independent</span><div class="tf-btns" data-tf="tf1"><button class="tf-btn" data-val="true" onclick="selectTF(this)">True</button><button class="tf-btn" data-val="false" onclick="selectTF(this)">False</button></div></li>
+    <li class="tf-item"><span>Quiet and introverted</span><div class="tf-btns" data-tf="tf2"><button class="tf-btn" data-val="true" onclick="selectTF(this)">True</button><button class="tf-btn" data-val="false" onclick="selectTF(this)">False</button></div></li>
+    <li class="tf-item"><span>Energetic</span><div class="tf-btns" data-tf="tf3"><button class="tf-btn" data-val="true" onclick="selectTF(this)">True</button><button class="tf-btn" data-val="false" onclick="selectTF(this)">False</button></div></li>
+    <li class="tf-item"><span>Deeply traditional</span><div class="tf-btns" data-tf="tf4"><button class="tf-btn" data-val="true" onclick="selectTF(this)">True</button><button class="tf-btn" data-val="false" onclick="selectTF(this)">False</button></div></li>
+    <li class="tf-item"><span>Freedom-loving</span><div class="tf-btns" data-tf="tf5"><button class="tf-btn" data-val="true" onclick="selectTF(this)">True</button><button class="tf-btn" data-val="false" onclick="selectTF(this)">False</button></div></li>
+  </ul>
+</div>
+
+<!-- S5: STORY -->
+<div class="slide bg-light" id="s5">
+  <div class="rings rings-light" style="top:-80px;left:-70px;width:220px;height:220px"></div>
+  <div class="round-badge">The Legend</div>
+  <div class="story-block">
+    <p>The <strong class="text-fire">Jade Emperor</strong> invited all the animals to race across a great river. The finishing order would become the zodiac.</p><br>
+    <p>The <strong>Horse</strong> was strong and fast &mdash; expected to place near the top.</p><br>
+    <p>But at the finish line, the <strong class="text-fire">Snake</strong> &mdash; hidden on the Horse's hoof &mdash; leapt out and startled it. The Horse reared back.</p><br>
+    <p style="font-family:'Outfit',sans-serif;font-weight:700;letter-spacing:.03em">Snake = 6th &nbsp;&nbsp; Horse = 7th</p>
+  </div>
+</div>
+
+<!-- S6: Q3 -->
+<div class="slide bg-dark" id="s6">
+  <div class="rings rings-dark" style="bottom:-100px;left:-80px;width:240px;height:240px"></div>
+  <div class="round-badge">The Legend</div>
+  <h2>What does the Great Race<br>story symbolize?</h2>
+  <div class="options" data-q="q3">
+    <div class="option" data-val="a" onclick="selectMC(this)"><span class="letter">A</span> Intelligence beats strength</div>
+    <div class="option" data-val="b" onclick="selectMC(this)"><span class="letter">B</span> Teamwork wins</div>
+    <div class="option" data-val="c" onclick="selectMC(this)"><span class="letter">C</span> Deception is rewarded</div>
+    <div class="option" data-val="d" onclick="selectMC(this)"><span class="letter">D</span> Luck decides fate</div>
+  </div>
+</div>
+
+<!-- S7: Q4 BIRTH RATES + COUNTRY BONUS -->
+<div class="slide bg-light" id="s7">
+  <div class="round-badge">Fire Element</div>
+  <h2>True or false:</h2>
+  <p class="mt-1" style="font-size:1.1rem;max-width:520px">Fire Horse years historically caused a measurable <strong>drop in birth rates</strong> in some countries.</p>
+  <div class="options" data-q="q4" style="max-width:320px">
+    <div class="option" data-val="a" onclick="selectMC(this)"><span class="letter">T</span> True</div>
+    <div class="option" data-val="b" onclick="selectMC(this)"><span class="letter">F</span> False</div>
+  </div>
+  <div class="bonus-area" id="bonusArea">
+    <p class="bonus-msg">Correct! 🔥</p>
+    <p style="font-size:.9rem;opacity:.5;margin-bottom:.6rem">Bonus: which countries were affected? (no penalty for guessing wrong)</p>
+    <div class="country-grid" id="countryGrid">
+      <button class="country-btn" data-country="japan" data-right="true" onclick="pickCountry(this)">🇯🇵 Japan</button>
+      <button class="country-btn" data-country="skorea" data-right="true" onclick="pickCountry(this)">🇰🇷 South Korea</button>
+      <button class="country-btn" data-country="taiwan" data-right="true" onclick="pickCountry(this)">🇹🇼 Taiwan</button>
+      <button class="country-btn" data-country="china" data-right="false" onclick="pickCountry(this)">🇨🇳 China</button>
+      <button class="country-btn" data-country="india" data-right="false" onclick="pickCountry(this)">🇮🇳 India</button>
+      <button class="country-btn" data-country="thailand" data-right="false" onclick="pickCountry(this)">🇹🇭 Thailand</button>
+    </div>
+    <button class="reveal-countries-btn" onclick="revealCountries()">Reveal</button>
+    <p id="countryResult" style="font-size:.85rem;opacity:.5;margin-top:.6rem;display:none;max-width:450px"></p>
+  </div>
+  <div id="wrongBirthMsg" style="display:none;margin-top:1.2rem;animation:slideUp .4s ease">
+    <p style="font-size:1rem;opacity:.5">The answer was <strong class="text-fire">True</strong>. In Japan's 1966 Fire Horse year, birth rates dropped ~25% due to superstition about Fire Horse daughters.</p>
+  </div>
+</div>
+
+<!-- S8: Q5 COMPATIBILITY -->
+<div class="slide bg-dark" id="s8">
+  <div class="rings rings-dark" style="top:-60px;left:-50px;width:180px;height:180px"></div>
+  <div class="round-badge">Compatibility</div>
+  <h2>Which zodiac signs are most<br>compatible with Horse?</h2>
+  <div class="options" data-q="q5">
+    <div class="option" data-val="a" onclick="selectMC(this)"><span class="letter">A</span> Tiger &amp; Dog</div>
+    <div class="option" data-val="b" onclick="selectMC(this)"><span class="letter">B</span> Ox &amp; Rat</div>
+    <div class="option" data-val="c" onclick="selectMC(this)"><span class="letter">C</span> Goat &amp; Rooster</div>
+    <div class="option" data-val="d" onclick="selectMC(this)"><span class="letter">D</span> Dragon &amp; Pig</div>
+  </div>
+</div>
+
+<!-- S9: SQUAD -->
+<div class="slide bg-light" id="s9">
+  <div class="rings rings-light" style="bottom:-110px;right:-80px;width:260px;height:260px"></div>
+  <div class="round-badge">Your Squad</div>
+  <h2>Who else is on the call?</h2>
+  <p class="subtitle">Add your friends to see who's compatible with the Fire Horse &mdash; and with you.</p>
+  <div class="squad-input">
+    <input type="text" id="sqNameInput" placeholder="Friend's name" maxlength="15">
+    <select id="sqSignSelect"></select>
+    <button onclick="addSquad()">Add</button>
+  </div>
+  <div class="squad-list" id="squadList"></div>
+</div>
+
+<!-- S10: Q6 -->
+<div class="slide bg-dark" id="s10">
+  <div class="round-badge">Traditions &amp; Luck</div>
+  <h2>Which of these is considered<br><em>bad luck</em> during Lunar New Year?</h2>
+  <div class="options" data-q="q6">
+    <div class="option" data-val="a" onclick="selectMC(this)"><span class="letter">A</span> Wearing red</div>
+    <div class="option" data-val="b" onclick="selectMC(this)"><span class="letter">B</span> Eating fish</div>
+    <div class="option" data-val="c" onclick="selectMC(this)"><span class="letter">C</span> Sweeping the floor on New Year's Day</div>
+    <div class="option" data-val="d" onclick="selectMC(this)"><span class="letter">D</span> Setting off firecrackers</div>
+  </div>
+</div>
+
+<!-- S11: Q7 -->
+<div class="slide bg-light" id="s11">
+  <div class="rings rings-light" style="top:-70px;right:-60px;width:200px;height:200px"></div>
+  <div class="round-badge">Traditions &amp; Luck</div>
+  <h2>Red envelopes (<em>hongbao</em>)<br>are traditionally filled with&hellip;</h2>
+  <div class="options" data-q="q7">
+    <div class="option" data-val="a" onclick="selectMC(this)"><span class="letter">A</span> Tea leaves</div>
+    <div class="option" data-val="b" onclick="selectMC(this)"><span class="letter">B</span> Seeds</div>
+    <div class="option" data-val="c" onclick="selectMC(this)"><span class="letter">C</span> Money</div>
+    <div class="option" data-val="d" onclick="selectMC(this)"><span class="letter">D</span> Poems</div>
+  </div>
+</div>
+
+<!-- S12: Q8 -->
+<div class="slide bg-dark" id="s12">
+  <div class="rings rings-fire" style="bottom:-90px;right:-70px;width:220px;height:220px"></div>
+  <div class="round-badge">Traditions &amp; Luck</div>
+  <h2>Long noodles are eaten uncut<br>during Lunar New Year because<br>they represent&hellip;</h2>
+  <div class="options" data-q="q8">
+    <div class="option" data-val="a" onclick="selectMC(this)"><span class="letter">A</span> Wealth</div>
+    <div class="option" data-val="b" onclick="selectMC(this)"><span class="letter">B</span> Longevity</div>
+    <div class="option" data-val="c" onclick="selectMC(this)"><span class="letter">C</span> Wisdom</div>
+    <div class="option" data-val="d" onclick="selectMC(this)"><span class="letter">D</span> Courage</div>
+  </div>
+</div>
+
+<!-- S13: WRAPPED 1 — SCORE (Spotify Wrapped stat reveal style) -->
+<div class="slide bg-dark" id="s13">
+  <div class="rings rings-fire" style="bottom:-130px;left:50%;margin-left:-160px;width:320px;height:320px;opacity:.5"></div>
+  <h2 style="font-weight:800;opacity:.6;font-size:1.1rem;letter-spacing:.05em">You scored.</h2>
+  <div class="big-num" id="wScore">0</div>
+  <p style="font-family:'Outfit',sans-serif;font-size:1.1rem;opacity:.4;margin-top:.3rem">out of 13</p>
+  <div class="accent-line mt-1"></div>
+  <p id="wScoreMsg" style="opacity:.45;margin-top:.6rem;max-width:400px"></p>
+</div>
+
+<!-- S14: WRAPPED 2 — STRENGTH -->
+<div class="slide bg-light" id="s14">
+  <div class="rings rings-light" style="top:-80px;right:-70px;width:220px;height:220px"></div>
+  <p class="round-badge">Your Strongest Area</p>
+  <span class="big-emoji" id="wStrEmoji">🔥</span>
+  <h2 id="wStrText" style="animation:slideUp .5s ease .2s both"></h2>
+  <p id="wStrDesc" style="opacity:.5;max-width:420px;margin-top:.6rem;animation:slideUp .5s ease .4s both"></p>
+</div>
+
+<!-- S15: WRAPPED 3 — WHAT YOU MISSED (or fireworks) -->
+<div class="slide bg-dark" id="s15">
+  <div id="missContent"></div>
+</div>
+
+<!-- S16: TITLE CARD -->
+<div class="slide bg-dark" id="s16">
+  <span class="galloping-horse">🐎</span>
+  <span class="galloping-horse">🐎</span>
+  <div class="tc-outer">
+    <div class="tc-card" id="titleCard">
+      <p class="tc-top-label">Lunar New Year &bull; 2026</p>
+      <span class="tc-zodiac-big" id="tcEmoji"></span>
+      <p class="tc-name" id="tcName"></p>
+      <p class="tc-sign-label" id="tcSign"></p>
+      <div class="tc-div"></div>
+      <div class="tc-title-wrap">
+        <p class="tc-title" id="tcTitle"></p>
+      </div>
+      <p class="tc-flavor" id="tcFlavor"></p>
+      <div class="tc-meter"><div class="tc-meter-fill" id="tcMeter"></div></div>
+      <p class="tc-score" id="tcScoreLabel"></p>
+      <div class="tc-div"></div>
+      <p class="tc-zodiac-msg" id="tcZodiacMsg"></p>
+      <p class="tc-footer">Are You Ready to Ride? &bull; Year of the Fire Horse</p>
+      <span class="tc-horse-wm">馬</span>
+    </div>
+  </div>
+  <p class="text-sm mt-2">Screenshot this and drop it in the group chat</p>
+</div>
+
+<button class="next-btn" id="nextBtn" onclick="nextSlide()">Next &rarr;</button>
+
+<script>
+// ══════════════════════════════════════
+// DATA
+// ══════════════════════════════════════
+const ZODIAC = [
+  {sign:'Rat',emoji:'🐀',years:[1984,1996,2008,2020]},
+  {sign:'Ox',emoji:'🐂',years:[1985,1997,2009,2021]},
+  {sign:'Tiger',emoji:'🐅',years:[1986,1998,2010,2022]},
+  {sign:'Rabbit',emoji:'🐇',years:[1987,1999,2011,2023]},
+  {sign:'Dragon',emoji:'🐉',years:[1988,2000,2012,2024]},
+  {sign:'Snake',emoji:'🐍',years:[1989,2001,2013,2025]},
+  {sign:'Horse',emoji:'🐎',years:[1990,2002,2014,2026]},
+  {sign:'Goat',emoji:'🐐',years:[1991,2003,2015]},
+  {sign:'Monkey',emoji:'🐒',years:[1992,2004,2016]},
+  {sign:'Rooster',emoji:'🐓',years:[1993,2005,2017]},
+  {sign:'Dog',emoji:'🐕',years:[1994,2006,2018]},
+  {sign:'Pig',emoji:'🐖',years:[1995,2007,2019]}
+];
+const CORRECT = {q1:'c',q2:'c',tf1:'true',tf2:'false',tf3:'true',tf4:'false',tf5:'true',q3:'a',q4:'a',q5:'a',q6:'c',q7:'c',q8:'b'};
+const Q_LABELS = {q1:'Zodiac cycle',q2:'Horse position',tf1:'Independent',tf2:'Introverted',tf3:'Energetic',tf4:'Traditional',tf5:'Freedom-loving',q3:'Great Race',q4:'Birth rates',q5:'Compatibility',q6:'Sweeping luck',q7:'Red envelopes',q8:'Longevity noodles'};
+const ANSWER_TEXT = {
+  q1:{a:'10 years',b:'12 years',c:'60 years',d:'24 years'},
+  q2:{a:'5th',b:'6th',c:'7th',d:'8th'},
+  q3:{a:'Intelligence beats strength',b:'Teamwork wins',c:'Deception is rewarded',d:'Luck decides fate'},
+  q4:{a:'True',b:'False'},q5:{a:'Tiger & Dog',b:'Ox & Rat',c:'Goat & Rooster',d:'Dragon & Pig'},
+  q6:{a:'Wearing red',b:'Eating fish',c:'Sweeping the floor',d:'Setting off firecrackers'},
+  q7:{a:'Tea leaves',b:'Seeds',c:'Money',d:'Poems'},
+  q8:{a:'Wealth',b:'Longevity',c:'Wisdom',d:'Courage'},
+  tf1:{true:'True',false:'False'},tf2:{true:'True',false:'False'},tf3:{true:'True',false:'False'},
+  tf4:{true:'True',false:'False'},tf5:{true:'True',false:'False'}
+};
+const EXPLANATIONS = {
+  q1:'12 animals cycle through 5 elements (Wood, Fire, Earth, Metal, Water). 12 × 5 = 60.',
+  q2:'The Snake surprised the Horse at the finish line of the Great Race, stealing 6th place.',
+  tf1:'Horses are fiercely independent — they resist being controlled.',
+  tf2:'Horses are outgoing and energetic, not quiet or introverted.',
+  tf3:'High energy is one of the Horse\'s defining traits.',
+  tf4:'Horses resist tradition — they\'re restless and unconventional.',
+  tf5:'Freedom is the Horse\'s core value. They need space to run.',
+  q3:'The Snake used wit, not power — cleverness over brute force.',
+  q4:'In Japan\'s 1966 Fire Horse year, birth rates dropped ~25% due to superstition.',
+  q5:'Horse, Tiger, and Dog form the zodiac\'s action trio — bold, loyal, and freedom-driven.',
+  q6:'Sweeping on New Year\'s Day is believed to sweep away good fortune and wealth.',
+  q7:'Red envelopes (hongbao) contain money — a gift of luck and prosperity.',
+  q8:'Long noodles represent long life — cutting them is believed to cut your lifespan short.'
+};
+const HORSE_COMPAT = {
+  Rat:{level:'clash',desc:'Opposite energies — fire and water collide'},
+  Ox:{level:'challenge',desc:'Different speeds, different goals'},
+  Tiger:{level:'soulmate',desc:'Bold meets bold — the action duo'},
+  Rabbit:{level:'good',desc:'Gentle meets wild — a balancing act'},
+  Dragon:{level:'great',desc:'Two powerhouses — electric together'},
+  Snake:{level:'challenge',desc:'The Great Race rivalry lives on'},
+  Horse:{level:'great',desc:'Mirror energy — double the fire'},
+  Goat:{level:'soulmate',desc:'Adventure meets art — the classic pair'},
+  Monkey:{level:'good',desc:'Chaotic fun — never boring'},
+  Rooster:{level:'challenge',desc:'Friction creates sparks'},
+  Dog:{level:'soulmate',desc:'Trust and freedom — the dream team'},
+  Pig:{level:'good',desc:'Warmth meets wildfire — complementary'}
+};
+const ZODIAC_ADJ = {Rat:'Cunning',Ox:'Unyielding',Tiger:'Ferocious',Rabbit:'Luminous',Dragon:'Sovereign',Snake:'Ancient',Horse:'Untamed',Goat:'Ethereal',Monkey:'Dazzling',Rooster:'Golden',Dog:'Steadfast',Pig:'Noble'};
+const SCORE_NOUN = {13:'Inferno',12:'Wildfire',11:'Blaze',10:'Flame',9:'Torch',8:'Fire',7:'Ember',6:'Spark',5:'Flicker',4:'Kindle',3:'Glow',2:'Warmth',1:'Coal',0:'Smoke'};
+const ZODIAC_MSG = {
+  Horse:"It's YOUR year. The Fire Horse energy is already burning in you.",
+  Tiger:"Tiger and Horse ride side by side — bold recognizes bold.",
+  Dog:"Loyalty meets freedom — the dream team rides tonight.",
+  Rat:"Opposite in the zodiac, but you showed up anyway. Respect.",
+  Ox:"Different pace, same determination. The Ox earns the Horse's respect.",
+  Rabbit:"You bring calm to the wildfire. Different energy, same heart.",
+  Dragon:"Two powerhouses. The zodiac can barely contain you both.",
+  Snake:"The ancient rivalry lives on — but so does the respect.",
+  Goat:"You move differently, toward the same horizon.",
+  Monkey:"Chaotic and brilliant — the Horse never sees you coming.",
+  Rooster:"Friction creates sparks. And sparks start fires.",
+  Pig:"You bring warmth where the Horse brings flame. A gentle balance."
+};
+const STRENGTH_MAP = {
+  knowledge:{emoji:'📚',text:'Knowledge',desc:'You nailed the facts. Cycles, positions — the details stick with you.'},
+  intuition:{emoji:'✨',text:'Intuition',desc:'You read the Horse\'s personality like you\'ve met before. Instinct over intellect.'},
+  philosophy:{emoji:'🌀',text:'Philosophy',desc:'You think in meaning. The Great Race isn\'t just a story — it\'s a lesson.'},
+  culture:{emoji:'🏮',text:'Cultural Depth',desc:'Superstitions, traditions, real-world impact — you see the culture behind the calendar.'},
+  connection:{emoji:'🤝',text:'Connection',desc:'You understand how signs relate. Compatibility isn\'t trivia — it\'s energy.'}
+};
+const FLAVOR_BY_STRENGTH = {
+  knowledge:'You hold the ancient records in your hands.',
+  intuition:'The Horse speaks to you without words.',
+  philosophy:'You see the meaning behind the fire.',
+  culture:'You honor what the world has forgotten.',
+  connection:'You know where the bonds burn brightest.'
+};
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let playerName='', playerZodiac='', currentSlide=0;
+const TOTAL=17, QSLIDES={2:['q1'],3:['q2'],4:['tf1','tf2','tf3','tf4','tf5'],6:['q3'],7:['q4'],8:['q5'],10:['q6'],11:['q7'],12:['q8']};
+const NON_Q=[0,1,5,9,13,14,15,16];
+let answers={}, squad=[];
+
+// ══════════════════════════════════════
+// BUILD ZODIAC GRID
+// ══════════════════════════════════════
+(function buildZodiac(){
+  const grid=document.getElementById('zodiacGrid');
+  const sel=document.getElementById('sqSignSelect');
+  ZODIAC.forEach(z=>{
+    const btn=document.createElement('button');
+    btn.className='zodiac-btn';
+    btn.dataset.sign=z.sign;
+    btn.onclick=()=>selectZodiac(btn);
+    btn.innerHTML=`${z.emoji} ${z.sign}<span class="tip">${z.years.join(', ')}</span>`;
+    grid.appendChild(btn);
+    const opt=document.createElement('option');
+    opt.value=z.sign;opt.textContent=`${z.emoji} ${z.sign}`;
+    sel.appendChild(opt);
+  });
+})();
+
+// ══════════════════════════════════════
+// FIRE PARTICLES (subtle)
+// ══════════════════════════════════════
+const canvas=document.getElementById('fireCanvas'),ctx=canvas.getContext('2d');let particles=[];
+function resizeCanvas(){canvas.width=innerWidth;canvas.height=innerHeight}
+resizeCanvas();addEventListener('resize',resizeCanvas);
+class Ember{constructor(){this.reset()}
+reset(){this.x=Math.random()*canvas.width;this.y=canvas.height+10;this.size=Math.random()*2+.5;this.vy=-(Math.random()*.6+.2);this.vx=(Math.random()-.5)*.4;this.opacity=Math.random()*.2+.05;this.life=0;this.max=Math.random()*250+100;this.color=['#E8503A','#E67E22','#F5A623','#C0392B'][Math.floor(Math.random()*4)]}
+update(){this.x+=this.vx+Math.sin(this.life*.02)*.15;this.y+=this.vy;this.life++;this.opacity=Math.max(0,this.opacity-.001);if(this.life>this.max||this.opacity<=0)this.reset()}
+draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fillStyle=this.color;ctx.globalAlpha=this.opacity;ctx.fill();ctx.globalAlpha=1}}
+for(let i=0;i<15;i++){const e=new Ember();e.y=Math.random()*canvas.height;e.life=Math.random()*100;particles.push(e)}
+(function anim(){ctx.clearRect(0,0,canvas.width,canvas.height);particles.forEach(p=>{p.update();p.draw()});requestAnimationFrame(anim)})();
+
+// ══════════════════════════════════════
+// FIREWORKS
+// ══════════════════════════════════════
+const fwCanvas=document.getElementById('fireworksCanvas'),fwCtx=fwCanvas.getContext('2d');
+let fwParticles=[],fwRunning=false;
+function resizeFw(){fwCanvas.width=innerWidth;fwCanvas.height=innerHeight}
+resizeFw();addEventListener('resize',resizeFw);
+function launchFireworks(){
+  fwCanvas.classList.add('active');fwRunning=true;fwParticles=[];
+  let launches=0;const maxLaunches=12;
+  function burst(){
+    if(launches>=maxLaunches){setTimeout(()=>{fwRunning=false;fwCanvas.classList.remove('active')},2000);return}
+    const cx=Math.random()*fwCanvas.width*.6+fwCanvas.width*.2;
+    const cy=Math.random()*fwCanvas.height*.4+fwCanvas.height*.1;
+    const colors=['#F5A623','#E8503A','#E67E22','#F1C40F','#C0392B'];
+    const col=colors[Math.floor(Math.random()*colors.length)];
+    for(let i=0;i<60;i++){
+      const angle=Math.random()*Math.PI*2;const speed=Math.random()*4+1;
+      fwParticles.push({x:cx,y:cy,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:0,max:60+Math.random()*40,color:col,size:Math.random()*2+1});
+    }
+    launches++;setTimeout(burst,300+Math.random()*400);
+  }
+  burst();
+  (function fwAnim(){
+    fwCtx.clearRect(0,0,fwCanvas.width,fwCanvas.height);
+    fwParticles=fwParticles.filter(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.vy+=.05;p.life++;
+      const a=Math.max(0,1-p.life/p.max);
+      fwCtx.beginPath();fwCtx.arc(p.x,p.y,p.size*a,0,Math.PI*2);
+      fwCtx.fillStyle=p.color;fwCtx.globalAlpha=a;fwCtx.fill();
+      fwCtx.globalAlpha=1;return p.life<p.max;
+    });
+    if(fwRunning||fwParticles.length)requestAnimationFrame(fwAnim);
+  })();
+}
+
+// ══════════════════════════════════════
+// WELCOME
+// ══════════════════════════════════════
+function selectZodiac(btn){document.querySelectorAll('.zodiac-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');playerZodiac=btn.dataset.sign;checkReady()}
+document.getElementById('nameInput').addEventListener('input',checkReady);
+function checkReady(){const n=document.getElementById('nameInput').value.trim();document.getElementById('startBtn').classList.toggle('ready',!!(n&&playerZodiac))}
+function startGame(){playerName=document.getElementById('nameInput').value.trim();if(!playerName||!playerZodiac)return;nextSlide()}
+
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+function showSlide(n){
+  document.querySelectorAll('.slide').forEach(s=>s.classList.remove('active'));
+  const s=document.getElementById('s'+n);
+  if(s){s.classList.add('active');s.style.animation='none';s.offsetHeight;s.style.animation=''}
+  currentSlide=n;updateProgress();updateNextBtn();
+  if(n===13)buildWrapped();
+  if(n===16)setTimeout(()=>{document.getElementById('tcMeter').style.width=(calcScore().total/13*100)+'%'},200);
+}
+function nextSlide(){if(currentSlide<TOTAL-1){lockCurrentSlide();showSlide(currentSlide+1)}}
+function updateProgress(){document.getElementById('progressBar').style.width=(currentSlide/(TOTAL-1)*100)+'%'}
+function updateNextBtn(){
+  const btn=document.getElementById('nextBtn');
+  if(currentSlide===0||currentSlide===TOTAL-1){btn.classList.remove('visible');return}
+  if(NON_Q.includes(currentSlide)){btn.classList.add('visible');return}
+  const reqs=QSLIDES[currentSlide];
+  btn.classList.toggle('visible',!!(reqs&&reqs.every(k=>answers[k]!==undefined)));
+}
+
+// ══════════════════════════════════════
+// ANSWERS
+// ══════════════════════════════════════
+function selectMC(el){
+  const c=el.closest('.options');if(c.classList.contains('locked'))return;
+  answers[c.dataset.q]=el.dataset.val;
+  c.querySelectorAll('.option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  if(c.dataset.q==='q4'){
+    document.getElementById('bonusArea').classList.toggle('show',el.dataset.val==='a');
+    document.getElementById('wrongBirthMsg').style.display='none';
+  }
+  updateNextBtn();
+}
+function selectTF(el){
+  const g=el.closest('.tf-btns');if(g.classList.contains('locked'))return;
+  answers[g.dataset.tf]=el.dataset.val;
+  g.querySelectorAll('.tf-btn').forEach(b=>b.classList.remove('sel-t','sel-f'));
+  el.classList.add(el.dataset.val==='true'?'sel-t':'sel-f');
+  updateNextBtn();
+}
+function lockCurrentSlide(){
+  const slide=document.getElementById('s'+currentSlide);
+  slide.querySelectorAll('.options').forEach(c=>{c.classList.add('locked')});
+  slide.querySelectorAll('.tf-btns').forEach(g=>{g.classList.add('locked')});
+  if(currentSlide===7&&answers.q4==='b')document.getElementById('wrongBirthMsg').style.display='block';
+}
+
+// Country bonus
+function pickCountry(el){if(el.classList.contains('picked')){el.classList.remove('picked')}else{el.classList.add('picked')}}
+function revealCountries(){
+  document.querySelectorAll('.country-btn').forEach(b=>{
+    b.classList.add('locked');
+    if(b.dataset.right==='true'){
+      if(b.classList.contains('picked'))b.classList.add('right');
+      else{b.classList.remove('picked');b.classList.add('missed')}
+    }else{
+      if(b.classList.contains('picked'))b.classList.add('nope');
+      else b.classList.add('nope');
+    }
+  });
+  const r=document.getElementById('countryResult');
+  r.style.display='block';
+  r.textContent='Japan saw a ~25% birth rate drop in 1966. South Korea and Taiwan also documented smaller but measurable effects linked to Fire Horse superstition.';
+  document.querySelector('.reveal-countries-btn').style.display='none';
+}
+
+// ══════════════════════════════════════
+// SQUAD
+// ══════════════════════════════════════
+function addSquad(){
+  const nameEl=document.getElementById('sqNameInput'),signEl=document.getElementById('sqSignSelect');
+  const name=nameEl.value.trim(),sign=signEl.value;
+  if(!name)return;squad.push({name,sign});nameEl.value='';renderSquad();
+}
+document.getElementById('sqNameInput').addEventListener('keydown',e=>{if(e.key==='Enter')addSquad()});
+function renderSquad(){
+  const list=document.getElementById('squadList');
+  list.innerHTML=squad.map(s=>{
+    const z=ZODIAC.find(z=>z.sign===s.sign);const c=HORSE_COMPAT[s.sign];
+    return `<div class="squad-card">
+      <span class="sq-emoji">${z?z.emoji:''}</span>
+      <div class="sq-info"><div class="sq-name">${s.name}</div><div class="sq-compat">${c.desc}</div></div>
+      <span class="sq-level ${c.level}">${c.level}</span>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════
+// SCORING
+// ══════════════════════════════════════
+function calcScore(){
+  let total=0,results={};
+  for(const[k,v]of Object.entries(CORRECT)){const got=answers[k]===v;results[k]=got;if(got)total++}
+  return{total,results};
+}
+function calcTF(){let c=0;['tf1','tf2','tf3','tf4','tf5'].forEach(k=>{if(answers[k]===CORRECT[k])c++});return c}
+function calcCats(r){
+  return{
+    knowledge:(r.q1?1:0)+(r.q2?1:0),
+    intuition:calcTF(),
+    philosophy:r.q3?1:0,
+    culture:(r.q4?1:0)+(r.q6?1:0)+(r.q7?1:0)+(r.q8?1:0),
+    connection:r.q5?1:0
+  };
+}
+function bestCategory(cats){
+  const maxes={knowledge:2,intuition:5,philosophy:1,culture:4,connection:1};
+  let best='culture',bestV=0;
+  for(const[c,v]of Object.entries(cats)){const n=v/maxes[c];if(n>bestV){bestV=n;best=c}}
+  return best;
+}
+
+// ══════════════════════════════════════
+// BUILD WRAPPED
+// ══════════════════════════════════════
+function buildWrapped(){
+  const{total,results}=calcScore();const tf=calcTF();const cats=calcCats(results);const best=bestCategory(cats);
+
+  // S13: Score
+  document.getElementById('wScore').textContent=total;
+  const msgs=[
+    [12,'Near perfect. The flames bow to you.'],[10,'Strong showing. You came prepared.'],
+    [7,'Solid ground. You know more than most.'],[4,'Room to grow — but you showed up. That counts.'],
+    [0,'The fire starts small. Now you know.']
+  ];
+  document.getElementById('wScoreMsg').textContent=(msgs.find(m=>total>=m[0])||msgs[msgs.length-1])[1];
+
+  // S14: Strength
+  const str=STRENGTH_MAP[best];
+  document.getElementById('wStrEmoji').textContent=str.emoji;
+  document.getElementById('wStrText').textContent=str.text;
+  document.getElementById('wStrDesc').textContent=str.desc;
+
+  // S15: What you missed (or fireworks)
+  const missEl=document.getElementById('missContent');
+  const allKeys=Object.keys(CORRECT);
+  const wrong=allKeys.filter(k=>!results[k]);
+
+  if(wrong.length===0){
+    missEl.innerHTML=`<p class="round-badge">Flawless</p><p class="perfect-msg" style="font-size:2.5rem;margin-bottom:.5rem">You didn't miss a single one.</p><div class="accent-line long"></div><p style="opacity:.4;margin-top:.5rem">13 for 13. The Horse carried you — or maybe you carried it.</p>`;
+    setTimeout(launchFireworks,600);
+  } else {
+    let html=`<p class="round-badge">What You Missed</p><h2 class="mb-1">${wrong.length} question${wrong.length>1?'s':''} to learn from</h2>`;
+    wrong.forEach((k,i)=>{
+      const yourAns=answers[k];const correctAns=CORRECT[k];
+      html+=`<div class="miss-card" style="animation-delay:${i*.1}s">
+        <div class="miss-q">${Q_LABELS[k]}</div>
+        <div class="miss-you">You said: ${ANSWER_TEXT[k][yourAns]}</div>
+        <div class="miss-correct">Correct: ${ANSWER_TEXT[k][correctAns]}</div>
+        <div class="miss-why">${EXPLANATIONS[k]}</div>
+      </div>`;
+    });
+    missEl.innerHTML=html;
+  }
+
+  // S16: Title card
+  const adj=ZODIAC_ADJ[playerZodiac]||'Blazing';
+  const noun=SCORE_NOUN[total]||'Smoke';
+  const zData=ZODIAC.find(z=>z.sign===playerZodiac);
+  const flavor=FLAVOR_BY_STRENGTH[best];
+  const zodiacMsg=ZODIAC_MSG[playerZodiac]||'You brought your own energy to the Fire Horse\'s table.';
+
+  document.getElementById('tcEmoji').textContent=zData?zData.emoji:'🔥';
+  document.getElementById('tcName').textContent=playerName;
+  document.getElementById('tcSign').textContent=playerZodiac;
+  document.getElementById('tcTitle').textContent='The '+adj+' '+noun;
+  document.getElementById('tcFlavor').textContent='"'+flavor+'"';
+  document.getElementById('tcScoreLabel').textContent=total+' / 13';
+  document.getElementById('tcZodiacMsg').textContent=zodiacMsg;
+}
+
+// ══════════════════════════════════════
+// KEYBOARD
+// ══════════════════════════════════════
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
+  if(e.key==='ArrowRight'||e.key===' '||e.key==='Enter'){e.preventDefault();if(document.getElementById('nextBtn').classList.contains('visible'))nextSlide()}
+});
+document.getElementById('nameInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(document.getElementById('startBtn').classList.contains('ready'))startGame()}});
+
+updateProgress();updateNextBtn();
+</script>
+</body>
+</html>
